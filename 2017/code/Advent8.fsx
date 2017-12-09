@@ -76,20 +76,20 @@ let addRegIfNeeded reg (registers: Register list) =
     then { Name = reg; Value = 0}::registers 
     else registers
 
-let rec workItOut (expressions: Expression list) (registers: Register list) =
+let rec workItOut (expressions: Expression list) (registers: Register list) (max: int) =
     match expressions, registers with
-    | [], [] -> 0
-    | [], l -> let reg = l |> List.maxBy (fun r -> r.Value)
-               reg.Value
+    | [], _ -> max
     | exp::tail, _ ->
         let newRegisters = (registers |> addRegIfNeeded exp.Reg) |> addRegIfNeeded exp.Cond.Name
         if newRegisters |> List.exists (fun r -> matchesCondition r exp.Cond) |> not
-        then workItOut tail newRegisters
+        then workItOut tail newRegisters max
         else
-            workItOut tail (newRegisters |> List.map (fun r -> if r.Name = exp.Reg then r |> update exp.Op exp.Value else r))
+            let updated = newRegisters |> List.map (fun r -> if r.Name = exp.Reg then r |> update exp.Op exp.Value else r)
+            let maxReg = updated |> List.maxBy (fun r -> r.Value)
+            workItOut tail updated (Math.Max(max, maxReg.Value))
 
 let expressions = IO.File.ReadAllLines(@"2017\data\Advent8-1.txt")
                   |> Array.map parseLine
                   |> List.ofArray
 
-workItOut expressions []
+workItOut expressions [] 0

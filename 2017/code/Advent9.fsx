@@ -7,7 +7,8 @@ type State =
     { Sum: int
       Level: int
       InTrash: bool
-      ShouldCancel: bool }
+      ShouldCancel: bool
+      CountTrash: int }
 
 let folder (state: State) (c: char) =
     match state.InTrash with
@@ -16,7 +17,7 @@ let folder (state: State) (c: char) =
               | false -> match c with
                          | '!' -> {state with ShouldCancel = true}
                          | '>' -> {state with InTrash = false}
-                         | _ -> state
+                         | _ -> {state with CountTrash = state.CountTrash + 1}
     | false -> match c with
                | '{' -> {state with Level = state.Level + 1}
                | '}' -> {state with Sum = state.Sum + state.Level; Level = state.Level - 1}
@@ -25,4 +26,4 @@ let folder (state: State) (c: char) =
 let stream = IO.File.ReadAllText(@"2017\data\Advent9.txt")
              |> explode
 
-stream |> List.fold folder { Sum = 0; Level = 0; InTrash = false; ShouldCancel = false}
+stream |> List.fold folder { Sum = 0; Level = 0; InTrash = false; ShouldCancel = false; CountTrash = 0}

@@ -1,2 +1,2 @@
 # adventofcode
-Solutions to the Advent of code content, December 2015 http://adventofcode.com/
+Solutions to the Advent of code http://adventofcode.com/

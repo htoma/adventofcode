@@ -1,4 +1,3 @@
-open System.Web.Services.Protocols
 #load "../Strings.fsx"
 
 open System
@@ -88,7 +87,7 @@ let rec workItOut (expressions: Expression list) (registers: Register list) (max
             let maxReg = updated |> List.maxBy (fun r -> r.Value)
             workItOut tail updated (Math.Max(max, maxReg.Value))
 
-let expressions = IO.File.ReadAllLines(@"2017\data\Advent8-1.txt")
+let expressions = IO.File.ReadAllLines(@"2017\data\Advent8.txt")
                   |> Array.map parseLine
                   |> List.ofArray
 

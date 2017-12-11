@@ -1,8 +1,6 @@
-open System.Web.UI.WebControls
 #load "../Strings.fsx"
 
 open System
-open Strings
 
 type State = 
     { x: int

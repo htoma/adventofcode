@@ -29,10 +29,11 @@ let folder (state: State) (length: int) =
           Skip = state.Skip + 1 
           Numbers = newNumbers}
         
-let lengths = IO.File.ReadAllText(@"2017\data\Advent10.txt").Split([|" ";","|], StringSplitOptions.RemoveEmptyEntries) 
+let lengths = IO.File.ReadAllText(@"2017\data\Advent10-1.txt").Split([|" ";","|], StringSplitOptions.RemoveEmptyEntries) 
                 |> Array.map toNumber
                 |> List.ofArray
 
 let numbers = [for i in 0..255 -> i]
 
 lengths |> List.fold folder {CurPos = 0; Skip = 0; Numbers = numbers}
+            

@@ -9,14 +9,22 @@ let parseLine (line: string) =
 
 let edges = IO.File.ReadAllLines(@"2017\data\Advent12.txt")
              |> Array.map parseLine
-             |> dict
+             |> List.ofArray
 
-let rec count (el: string) (found: string list) =
-    let vertices = edges.[el] |> List.filter (fun v -> found |> List.contains v |> not)
+let edgeDict = edges |> dict
+
+let rec getGroup (el: string) (found: string list) =
+    let vertices = edgeDict.[el] |> List.filter (fun v -> found |> List.contains v |> not)
     match vertices with
     | [] -> found
     | l -> let newFound = List.concat [found; vertices] 
-           (List.collect (fun v -> count v newFound) l) |> List.distinct
+           (List.collect (fun v -> getGroup v newFound) l) |> List.distinct
 
-let res = count "0" ["0"] |> List.distinct
-res.Length
+let rec countGroups (edges: (string * string list) list) count =
+    match edges with
+    | [] -> count
+    | (v, _)::_ -> let group = getGroup v [v]
+                   let diff = edges |> List.filter (fun (v, _) -> group |> List.contains v |> not)
+                   countGroups diff (count + 1)
+
+countGroups edges 0

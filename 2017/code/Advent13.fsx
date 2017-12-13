@@ -17,9 +17,20 @@ let rec walk (pos: int) (values: Firewall list) (severity: int) =
                     | d, _ when d > pos -> walk (pos + 1) (values |> advanceScanner) severity
                     | d, p when d = pos && p % (2 * (head.Range - 1)) <> 0 -> walk (pos + 1) (tail |> advanceScanner) severity
                     | d, p when d = pos && p % (2 * (head.Range - 1)) = 0 ->
-                              printfn "pos %i, with (%i: %i and pos %i)" pos head.Depth head.Range head.Pos                     
-                              walk (pos + 1) (tail |> advanceScanner) (severity + d * head.Range) 
+                              walk (pos + 1) (tail |> advanceScanner) (severity + 1 + d * head.Range) 
                     | _ -> failwith "Invalid movement"
+
+let rec advanceWithStep step (values: Firewall list) =
+    if step = 0 then values
+    else 
+        advanceWithStep (step - 1) (values |> advanceScanner)
+
+let rec findSneakyStep step max (values: Firewall list) =
+    if step = max + 1 then printfn "Could not sneak after max wait %i" max
+    else
+        let caught  = walk 0 (advanceWithStep step values) 0
+        if caught = 0  then printfn "Could sneak while waiting %i" step
+        else findSneakyStep (step + 1) max values
 
 let parseLine (line: string) =
     let f = Regex.Match(line, @"^(\d+): (\d+)")
@@ -30,5 +41,22 @@ let parseLine (line: string) =
 let values = IO.File.ReadAllLines(@"2017\data\Advent13.txt")
              |> Array.map parseLine
              |> List.ofArray
+            
+let series = values |> List.map (fun f -> (
+                                            fun x -> if f.Depth = 0 then 
+                                                        2 * (f.Range - 1) * x
+                                                     else 
+                                                        2 * (f.Range - 1) - f.Depth + 2 * (f.Range - 1) * x))
 
-walk 0 values 0
+//walk 0 values 0
+//findSneakyStep 0 10 values
+
+let value = 10000000
+let generated = [0..value]
+                |> List.collect (fun v -> series |> List.map (fun f -> f(v)))
+                |> List.sortBy id
+                |> List.distinct
+                |> Set.ofList
+
+[0..value]
+|> List.tryFind (fun v -> v |> generated.Contains |> not)

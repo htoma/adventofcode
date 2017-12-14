@@ -29,7 +29,9 @@ let res = [0..127]
             |> List.map (fun v -> sprintf "%s-%i" input v)
             |> List.map (fun v -> KnotHashes.giveMeKnot v)
             |> List.map (fun v -> v |> explode |> List.map (fun c -> hexes.[c]))
-            |> List.concat
+            |> List.map (fun l -> String.Join("", l))
+
 
 res |> List.map (fun v -> v |> explode) |> List.concat |> List.countBy (fun v -> v = '1')            
 
+// for the second part, see: https://github.com/htoma/codility/blob/master/codility/Code/Countries.cs

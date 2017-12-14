@@ -51,12 +51,12 @@ let series = values |> List.map (fun f -> (
 //walk 0 values 0
 //findSneakyStep 0 10 values
 
-let value = 10000000
+let value = 4000000
 let generated = [0..value]
                 |> List.collect (fun v -> series |> List.map (fun f -> f(v)))
                 |> List.sortBy id
                 |> List.distinct
                 |> Set.ofList
 
-[0..value]
+[1000000..value]
 |> List.tryFind (fun v -> v |> generated.Contains |> not)

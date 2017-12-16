@@ -54,5 +54,16 @@ let parser (input: string list) (move: Move) =
     | XChange (l, r) -> (l, r) |> exchangePos input
     | PChange (v1, v2) -> (v1, v2) |> exchange input
     
+let rec dance (input: string list) (moves: Move list) count max (seen: string list) =
+    if count = max then count,seen
+    else
+        let state = moves |> List.fold parser input
+        let hashed = String.Join("", state)
+        if seen |> List.contains hashed then count, seen
+        else dance state moves (count + 1) max (List.append seen [hashed])
 
-String.Join("", moves |> List.fold parser input)
+// identify repeatable patterns, otherwise the processing will never end
+let (patternLength, states) = dance input moves 0 1000 []
+let positionInPattern = 1000000000 % patternLength
+
+(states |> Array.ofList).[positionInPattern - 1]

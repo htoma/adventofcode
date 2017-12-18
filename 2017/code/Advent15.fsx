@@ -1,4 +1,3 @@
-open System.Diagnostics.Eventing.Reader
 #load "../Strings.fsx"
 
 open System

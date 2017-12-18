@@ -7,23 +7,20 @@ namespace ConsoleApp1
     {
         public static void Go(List<string> moves)
         {
-            var run1 = new Runner(0, moves);
-            var run2 = new Runner(1, moves);
-            var count = 1;
+            var run0 = new Runner(0, moves);
+            var run1 = new Runner(1, moves);
             while (true)
             {
-                Console.WriteLine($"Sent by 0: {run1.Sent()}, Sent by 1: {run2.Sent()}");
                 var res1 = run1.Run();
-                var res2 = run2.Run();
-                if (res1.Count == 0 && res2.Count == 0)
+                var res0 = run0.Run();
+                if (res0.Count == 0 && res1.Count == 0)
                 {
                     // deadlock
-                    Console.WriteLine($"Deadlock after {count}");
+                    Console.WriteLine($"Result {run1.Sent()}");
                     return;
                 }
-                run1.Store(res2);
-                run2.Store(res1);
-                count++;
+                run0.Store(res1);
+                run1.Store(res0);
             }
         }
     }

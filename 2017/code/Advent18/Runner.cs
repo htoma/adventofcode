@@ -4,13 +4,13 @@ using System.Text.RegularExpressions;
 
 namespace ConsoleApp1
 {
-   public class Runner
+    public class Runner
     {
-        private List<string> _moves;
-        private Dictionary<string, long> _dict = new Dictionary<string, long>();
-        private int _pos = 0;
-        private Queue<long> _values = new Queue<long>();
-        private long _id;
+        private readonly List<string> _moves;
+        private readonly Dictionary<string, long> _dict = new Dictionary<string, long>();
+        private int _pos;
+        private readonly Queue<long> _values = new Queue<long>();
+        private readonly long _id;
         private long _sent;
 
         public Runner(long id, List<string> moves)
@@ -30,7 +30,7 @@ namespace ConsoleApp1
             foreach (var value in values)
             {
                 _values.Enqueue(value);
-            }            
+            }
         }
 
         public List<long> Run()
@@ -171,7 +171,7 @@ namespace ConsoleApp1
                     continue;
                 }
 
-                m = Regex.Match(_moves[_pos], @"jgz (\w+) ([-\d]+)");
+                m = Regex.Match(_moves[_pos], @"jgz ([a-z]+) ([-\d]+)");
                 if (m.Success)
                 {
                     if (!_dict.ContainsKey(m.Groups[1].Value))
@@ -180,7 +180,7 @@ namespace ConsoleApp1
                     }
                     if (_dict[m.Groups[1].Value] > 0)
                     {
-                        _pos += (int) long.Parse(m.Groups[2].Value);
+                        _pos += (int)long.Parse(m.Groups[2].Value);
                     }
                     else
                     {
@@ -188,7 +188,7 @@ namespace ConsoleApp1
                     }
                     continue;
                 }
-                m = Regex.Match(_moves[_pos], @"jgz (\w+) (\w+)");
+                m = Regex.Match(_moves[_pos], @"jgz ([a-z]+) (\w+)");
                 if (m.Success)
                 {
                     if (!_dict.ContainsKey(m.Groups[1].Value))
@@ -201,7 +201,20 @@ namespace ConsoleApp1
                     }
                     if (_dict[m.Groups[1].Value] > 0)
                     {
-                        _pos += (int) _dict[m.Groups[2].Value];
+                        _pos += (int)_dict[m.Groups[2].Value];
+                    }
+                    else
+                    {
+                        _pos++;
+                    }
+                    continue;
+                }
+                m = Regex.Match(_moves[_pos], @"jgz ([\d]+) ([-\d]+)");
+                if (m.Success)
+                {
+                    if (long.Parse(m.Groups[1].Value) > 0)
+                    {
+                        _pos += (int)long.Parse(m.Groups[2].Value);
                     }
                     else
                     {

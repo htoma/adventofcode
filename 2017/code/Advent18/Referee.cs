@@ -12,23 +12,17 @@ namespace ConsoleApp1
             var count = 1;
             while (true)
             {
+                Console.WriteLine($"Sent by 0: {run1.Sent()}, Sent by 1: {run2.Sent()}");
                 var res1 = run1.Run();
                 var res2 = run2.Run();
-                if (res1.Flag == EResult.Waiting && res2.Flag == EResult.Waiting)
+                if (res1.Count == 0 && res2.Count == 0)
                 {
                     // deadlock
                     Console.WriteLine($"Deadlock after {count}");
-                    Console.WriteLine($"Sent by 0: {run1.Sent()}, Sent by 1: {run2.Sent()}");
                     return;
                 }
-                if (res1.Flag == EResult.Value)
-                {
-                    run2.Store(res1.Value);
-                }
-                if (res2.Flag == EResult.Value)
-                {
-                    run1.Store(res2.Value);
-                }
+                run1.Store(res2);
+                run2.Store(res1);
                 count++;
             }
         }

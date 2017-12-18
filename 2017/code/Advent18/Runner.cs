@@ -4,20 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace ConsoleApp1
 {
-    public enum EResult
-    {
-        None,
-        Value,
-        Waiting
-    }
-
-    public class Result
-    {
-        public EResult Flag { get; set; }
-        public long Value { get; set; }
-    }
-
-    public class Runner
+   public class Runner
     {
         private List<string> _moves;
         private Dictionary<string, long> _dict = new Dictionary<string, long>();
@@ -38,229 +25,193 @@ namespace ConsoleApp1
             return _sent;
         }
 
-        public void Store(long value)
+        public void Store(List<long> values)
         {
-            _values.Enqueue(value);
+            foreach (var value in values)
+            {
+                _values.Enqueue(value);
+            }            
         }
 
-        public Result Run()
+        public List<long> Run()
         {
-            var m = Regex.Match(_moves[_pos], @"snd (\w+)");
-
-            // send
-            if (m.Success)
+            var toSend = new List<long>();
+            while (_pos < _moves.Count)
             {
-                if (!_dict.ContainsKey(m.Groups[1].Value))
-                {
-                    _dict[m.Groups[1].Value] = 0;
-                }
+                var m = Regex.Match(_moves[_pos], @"snd (\w+)");
 
-                _pos++;
-                _sent++;
-                return new Result
+                // send
+                if (m.Success)
                 {
-                    Flag = EResult.Value,
-                    Value = _dict[m.Groups[1].Value]
-                };
-            }
-
-            //receive
-            m = Regex.Match(_moves[_pos], @"rcv (\w+)");
-            if (m.Success)
-            {
-                if (_values.Count == 0)
-                {
-                    Console.WriteLine($"Program {_id} waiting");
-                    return new Result
+                    if (!_dict.ContainsKey(m.Groups[1].Value))
                     {
-                        Flag = EResult.Waiting
-                    };
-                }
-                else
-                {
-                    Console.WriteLine($"Program {_id} still processing, left {_values.Count}");
-                }
+                        _dict[m.Groups[1].Value] = 0;
+                    }
 
-                var value = _values.Dequeue();
-                _dict[m.Groups[1].Value] = value;
-
-                _pos++;
-                return new Result
-                {
-                    Flag = EResult.None
-                };
-            }
-
-            m = Regex.Match(_moves[_pos], @"set (\w+) ([-\d]+)");
-            if (m.Success)
-            {
-                _dict[m.Groups[1].Value] = long.Parse(m.Groups[2].Value);
-
-                _pos++;
-                return new Result
-                {
-                    Flag = EResult.None
-                };
-            }
-            m = Regex.Match(_moves[_pos], @"set (\w+) (\w+)");
-            if (m.Success)
-            {
-                if (!_dict.ContainsKey(m.Groups[2].Value))
-                {
-                    _dict[m.Groups[2].Value] = 0;
-                }
-                _dict[m.Groups[1].Value] = _dict[m.Groups[2].Value];
-
-                _pos++;
-                return new Result
-                {
-                    Flag = EResult.None
-                };
-            }
-            m = Regex.Match(_moves[_pos], @"add (\w+) ([-\d]+)");
-            if (m.Success)
-            {
-                if (!_dict.ContainsKey(m.Groups[1].Value))
-                {
-                    _dict[m.Groups[1].Value] = 0;
-                }
-                _dict[m.Groups[1].Value] += long.Parse(m.Groups[2].Value);
-
-                _pos++;
-                return new Result
-                {
-                    Flag = EResult.None
-                };
-            }
-            m = Regex.Match(_moves[_pos], @"add (\w+) (\w+)");
-            if (m.Success)
-            {
-                if (!_dict.ContainsKey(m.Groups[1].Value))
-                {
-                    _dict[m.Groups[1].Value] = 0;
-                }
-                if (!_dict.ContainsKey(m.Groups[2].Value))
-                {
-                    _dict[m.Groups[2].Value] = 0;
-                }
-                _dict[m.Groups[1].Value] += _dict[m.Groups[2].Value];
-
-                _pos++;
-                return new Result
-                {
-                    Flag = EResult.None
-                };
-            }
-            m = Regex.Match(_moves[_pos], @"mul (\w+) ([-\d]+)");
-            if (m.Success)
-            {
-                if (!_dict.ContainsKey(m.Groups[1].Value))
-                {
-                    _dict[m.Groups[1].Value] = 0;
-                }
-                _dict[m.Groups[1].Value] *= long.Parse(m.Groups[2].Value);
-
-                _pos++;
-                return new Result
-                {
-                    Flag = EResult.None
-                };
-            }
-            m = Regex.Match(_moves[_pos], @"mul (\w+) (\w+)");
-            if (m.Success)
-            {
-                if (!_dict.ContainsKey(m.Groups[1].Value))
-                {
-                    _dict[m.Groups[1].Value] = 0;
-                }
-                if (!_dict.ContainsKey(m.Groups[2].Value))
-                {
-                    _dict[m.Groups[2].Value] = 0;
-                }
-                _dict[m.Groups[1].Value] *= _dict[m.Groups[2].Value];
-
-                _pos++;
-                return new Result
-                {
-                    Flag = EResult.None
-                }; 
-            }
-            m = Regex.Match(_moves[_pos], @"mod (\w+) ([-\d]+)");
-            if (m.Success)
-            {
-                if (!_dict.ContainsKey(m.Groups[1].Value))
-                {
-                    _dict[m.Groups[1].Value] = 0;
-                }
-                _dict[m.Groups[1].Value] = _dict[m.Groups[1].Value] % long.Parse(m.Groups[2].Value);
-
-                _pos++;
-                return new Result
-                {
-                    Flag = EResult.None
-                };
-            }
-            m = Regex.Match(_moves[_pos], @"mod (\w+) (\w+)");
-            if (m.Success)
-            {
-                if (!_dict.ContainsKey(m.Groups[1].Value))
-                {
-                    _dict[m.Groups[1].Value] = 0;
-                }
-                _dict[m.Groups[1].Value] = _dict[m.Groups[1].Value] % _dict[m.Groups[2].Value];
-
-                _pos++;
-                return new Result
-                {
-                    Flag = EResult.None
-                };
-            }
-            
-            m = Regex.Match(_moves[_pos], @"jgz (\w+) ([-\d]+)");
-            if (m.Success)
-            {
-                if (!_dict.ContainsKey(m.Groups[1].Value))
-                {
-                    _dict[m.Groups[1].Value] = 0;
-                }
-                if (_dict[m.Groups[1].Value] > 0)
-                {
-                    _pos += (int)long.Parse(m.Groups[2].Value);
-                }
-                else
-                {
                     _pos++;
+                    _sent++;
+                    toSend.Add(_dict[m.Groups[1].Value]);
+                    continue;
                 }
-                return new Result
+
+                //receive
+                m = Regex.Match(_moves[_pos], @"rcv (\w+)");
+                if (m.Success)
                 {
-                    Flag = EResult.None
-                };
-            }
-            m = Regex.Match(_moves[_pos], @"jgz (\w+) (\w+)");
-            if (m.Success)
-            {
-                if (!_dict.ContainsKey(m.Groups[1].Value))
-                {
-                    _dict[m.Groups[1].Value] = 0;
-                }
-                if (!_dict.ContainsKey(m.Groups[2].Value))
-                {
-                    _dict[m.Groups[2].Value] = 0;
-                }
-                if (_dict[m.Groups[1].Value] > 0)
-                {
-                    _pos += (int)_dict[m.Groups[2].Value];
-                }
-                else
-                {
+                    if (_values.Count == 0)
+                    {
+                        return toSend;
+                    }
+
+                    var value = _values.Dequeue();
+                    _dict[m.Groups[1].Value] = value;
+
                     _pos++;
+                    continue;
                 }
-                return new Result
+
+                m = Regex.Match(_moves[_pos], @"set (\w+) ([-\d]+)");
+                if (m.Success)
                 {
-                    Flag = EResult.None
-                };
+                    _dict[m.Groups[1].Value] = long.Parse(m.Groups[2].Value);
+
+                    _pos++;
+                    continue;
+                }
+                m = Regex.Match(_moves[_pos], @"set (\w+) (\w+)");
+                if (m.Success)
+                {
+                    if (!_dict.ContainsKey(m.Groups[2].Value))
+                    {
+                        _dict[m.Groups[2].Value] = 0;
+                    }
+                    _dict[m.Groups[1].Value] = _dict[m.Groups[2].Value];
+
+                    _pos++;
+                    continue;
+                }
+                m = Regex.Match(_moves[_pos], @"add (\w+) ([-\d]+)");
+                if (m.Success)
+                {
+                    if (!_dict.ContainsKey(m.Groups[1].Value))
+                    {
+                        _dict[m.Groups[1].Value] = 0;
+                    }
+                    _dict[m.Groups[1].Value] += long.Parse(m.Groups[2].Value);
+
+                    _pos++;
+                    continue;
+                }
+                m = Regex.Match(_moves[_pos], @"add (\w+) (\w+)");
+                if (m.Success)
+                {
+                    if (!_dict.ContainsKey(m.Groups[1].Value))
+                    {
+                        _dict[m.Groups[1].Value] = 0;
+                    }
+                    if (!_dict.ContainsKey(m.Groups[2].Value))
+                    {
+                        _dict[m.Groups[2].Value] = 0;
+                    }
+                    _dict[m.Groups[1].Value] += _dict[m.Groups[2].Value];
+
+                    _pos++;
+                    continue;
+                }
+                m = Regex.Match(_moves[_pos], @"mul (\w+) ([-\d]+)");
+                if (m.Success)
+                {
+                    if (!_dict.ContainsKey(m.Groups[1].Value))
+                    {
+                        _dict[m.Groups[1].Value] = 0;
+                    }
+                    _dict[m.Groups[1].Value] *= long.Parse(m.Groups[2].Value);
+
+                    _pos++;
+                    continue;
+                }
+                m = Regex.Match(_moves[_pos], @"mul (\w+) (\w+)");
+                if (m.Success)
+                {
+                    if (!_dict.ContainsKey(m.Groups[1].Value))
+                    {
+                        _dict[m.Groups[1].Value] = 0;
+                    }
+                    if (!_dict.ContainsKey(m.Groups[2].Value))
+                    {
+                        _dict[m.Groups[2].Value] = 0;
+                    }
+                    _dict[m.Groups[1].Value] *= _dict[m.Groups[2].Value];
+
+                    _pos++;
+                    continue;
+                }
+                m = Regex.Match(_moves[_pos], @"mod (\w+) ([-\d]+)");
+                if (m.Success)
+                {
+                    if (!_dict.ContainsKey(m.Groups[1].Value))
+                    {
+                        _dict[m.Groups[1].Value] = 0;
+                    }
+                    _dict[m.Groups[1].Value] = _dict[m.Groups[1].Value] % long.Parse(m.Groups[2].Value);
+
+                    _pos++;
+                    continue;
+                }
+                m = Regex.Match(_moves[_pos], @"mod (\w+) (\w+)");
+                if (m.Success)
+                {
+                    if (!_dict.ContainsKey(m.Groups[1].Value))
+                    {
+                        _dict[m.Groups[1].Value] = 0;
+                    }
+                    _dict[m.Groups[1].Value] = _dict[m.Groups[1].Value] % _dict[m.Groups[2].Value];
+
+                    _pos++;
+                    continue;
+                }
+
+                m = Regex.Match(_moves[_pos], @"jgz (\w+) ([-\d]+)");
+                if (m.Success)
+                {
+                    if (!_dict.ContainsKey(m.Groups[1].Value))
+                    {
+                        _dict[m.Groups[1].Value] = 0;
+                    }
+                    if (_dict[m.Groups[1].Value] > 0)
+                    {
+                        _pos += (int) long.Parse(m.Groups[2].Value);
+                    }
+                    else
+                    {
+                        _pos++;
+                    }
+                    continue;
+                }
+                m = Regex.Match(_moves[_pos], @"jgz (\w+) (\w+)");
+                if (m.Success)
+                {
+                    if (!_dict.ContainsKey(m.Groups[1].Value))
+                    {
+                        _dict[m.Groups[1].Value] = 0;
+                    }
+                    if (!_dict.ContainsKey(m.Groups[2].Value))
+                    {
+                        _dict[m.Groups[2].Value] = 0;
+                    }
+                    if (_dict[m.Groups[1].Value] > 0)
+                    {
+                        _pos += (int) _dict[m.Groups[2].Value];
+                    }
+                    else
+                    {
+                        _pos++;
+                    }
+                    continue;
+                }
+                throw new Exception($"Invalid move {_moves[_pos]}");
             }
-            throw new Exception($"Invalid move {_moves[_pos]}");
+            throw new Exception($"Runner {_id} has finished");
         }
     }
 }

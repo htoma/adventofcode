@@ -42,24 +42,25 @@ let getOn posi posj (direction: Direction) =
         | Direction.Up -> posi - 1, posj
         | Direction.Left -> posi, posj - 1
 
-let rec drive (map: Matrix) posi posj (direction: Direction) (letters: char list) =
+let rec drive (map: Matrix) posi posj (direction: Direction) (letters: char list) steps =
     match map.values.[posi].[posj] with
     | '|' | '-' -> 
                     let (newPosi, newPosj) = getOn posi posj direction
-                    drive map newPosi newPosj direction letters
+                    drive map newPosi newPosj direction letters (steps + 1)
     | '+' -> // change direction
              let (newDirection, newPosi, newPosj) = getNewDirection map posi posj direction
-             drive map newPosi newPosj newDirection letters
+             drive map newPosi newPosj newDirection letters (steps + 1)
     | c when c >= 'A' && c <= 'Z' -> let newLetters = List.append letters [c]
-                                     if isEndpoint map posi posj direction then newLetters
+                                     if isEndpoint map posi posj direction then newLetters, steps
                                      else 
                                          let (newPosi, newPosj) = getOn posi posj direction
-                                         drive map newPosi newPosj direction newLetters
+                                         drive map newPosi newPosj direction newLetters (steps + 1)
     | _ -> failwith "Middle of nowhere"
                  
 let map = IO.File.ReadAllLines(@"2017\data\Advent19.txt")
           |> Array.map explode
 
 let posj = map.[0] |> Array.findIndex (fun x -> x = '|')
-let result = drive {values = map; n = map.Length; m = map.[0].Length} 0 posj Direction.Down []
-String.Join("", result)
+let (letters, steps) = drive {values = map; n = map.Length; m = map.[0].Length} 0 posj Direction.Down [] 1
+String.Join("", letters)
+steps

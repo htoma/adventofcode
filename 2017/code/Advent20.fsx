@@ -36,8 +36,23 @@ let rec simulate (particles: Particle list) =
     | Some _ -> particles |> List.map updateParticle |> simulate
     | None -> // everything stable
               particles |> List.minBy (fun p -> computeDist p.acc)
-    
 
+let rec collidingTrip (particles: Particle list) epochs current =
+    match particles, current with
+    | [], _ -> 0
+    | _, v when v = epochs -> particles.Length
+    | _ -> 
+            let updated = particles 
+                        |> List.map updateParticle
+            let check = updated
+                        |> List.groupBy (fun p -> p.pos)
+                        |> List.filter (fun (_, g) -> g.Length > 1)
+                        |> List.map (fun (_, g) -> g |> List.map (fun p -> p.index))
+                        |> List.concat
+                        |> List.distinct
+                        |> Set.ofList
+            collidingTrip (updated |> List.filter (fun p -> check.Contains p.index |> not)) epochs (current + 1)
+                
 let parseLine index line =
     let m = Regex.Match(line, @"^p=<([,-\\d]+)>, v=<([,-\\d]+)>, a=<([,-\\d]+)>")
     { index = index; pos = m.Groups.[1].Value |> toCoord; vel = m.Groups.[2].Value |> toCoord; acc = m.Groups.[3].Value |> toCoord; isStable = false}
@@ -46,6 +61,7 @@ let particles = IO.File.ReadAllLines(@"2017\data\Advent20.txt")
              |> Array.mapi parseLine
              |> List.ofArray
 
-simulate particles
+//part 1: simulate particles
+//part2: collidingTrip particles 5000 0
 
 

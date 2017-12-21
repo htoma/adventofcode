@@ -161,10 +161,17 @@ namespace ConsoleApp1
 
         private List<int[,]> GetDerived(int[,] mine, int size)
         {
-            var result = new List<int[,]> {mine, Flip(mine, size)};
+            var flip = Flip(mine, size);
+            var result = new List<int[,]> {mine, flip};
             var r1 = Rotate(mine, size);
             var r2 = Rotate(r1, size);
             var r3 = Rotate(r2, size);
+            result.Add(r1);
+            result.Add(r2);
+            result.Add(r3);
+            r1 = Rotate(flip, size);
+            r2 = Rotate(r1, size);
+            r3 = Rotate(r2, size);
             result.Add(r1);
             result.Add(r2);
             result.Add(r3);
